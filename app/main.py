@@ -8,6 +8,11 @@ from fastapi import (
 
 from app.parser import extract_text
 from app.schemas import ResumeResponse
+from app.embeddings import embeddings
+from app.vector_store import (
+    load_vector_store,
+    save_documents
+)
 
 app = FastAPI(
     title="Resume Screening System"
@@ -25,7 +30,7 @@ def home():
         "message": "Welcome to Resume Screening System..."
     }
 
-@app.post("/upload", response_model=ResumeResponse)
+@app.post("/upload")
 async def upload_resume(
     file: UploadFile = File(...)
 ):
@@ -47,14 +52,38 @@ async def upload_resume(
         content = await file.read()
         f.write(content)
 
-    extracted_text = extract_text(
+    documents = extract_text(
         str(file_path)
     )
 
-    print(extracted_text)
-
-    return ResumeResponse(
-        filename=filename,
-        text_length=len(extracted_text),
-        extracted_text=extracted_text
+    save_documents(
+        documents,
+        embeddings
     )
+
+    return {
+        "message": "Resume indexed successfully",
+        "filename": file.filename,
+        "pages": len(documents)
+    }
+
+@app.get("/search")
+def search_resume(
+    query: str
+):
+    db = load_vector_store(embeddings)
+
+    if db is None:
+        raise HTTPException(status_code=404,detail="No resumes indexed")
+
+    docs = db.similarity_search(
+        query,
+        k=3
+    )
+
+    return {
+        "results": [
+            doc.page_content
+            for doc in docs
+        ]
+    }

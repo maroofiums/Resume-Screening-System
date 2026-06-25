@@ -5,9 +5,4 @@ def extract_text(pdf_path: str) -> str:
 
     documents = loader.load()
 
-    text = "\n".join(
-        doc.page_content
-        for doc in documents
-    )
-
-    return text
+    return documents
