@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+
+langchain
+langchain-community
+langchain-mistralai
+
+pymupdf
+
+python-multipart
+
+pydantic
