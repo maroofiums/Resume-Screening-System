@@ -1,6 +1,12 @@
 from pydantic import BaseModel
 
-class ResumeResponse(BaseModel):
-    filename: str
-    text_length: int
-    extracted_text: str
+
+class JobDescription(BaseModel):
+    description: str
+
+
+class RankedResume(BaseModel):
+    resume: str
+    score: float
+    page: int
+    preview: str

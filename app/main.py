@@ -6,8 +6,9 @@ from fastapi import (
     HTTPException
 )
 
-from app.parser import extract_text
-from app.schemas import ResumeResponse
+from app.ranking import rank_resumes
+from app.schemas import JobDescription
+from app.parser import load_resume
 from app.embeddings import embeddings
 from app.vector_store import (
     load_vector_store,
@@ -52,7 +53,7 @@ async def upload_resume(
         content = await file.read()
         f.write(content)
 
-    documents = extract_text(
+    documents = load_resume(
         str(file_path)
     )
 
@@ -87,3 +88,24 @@ def search_resume(
             for doc in docs
         ]
     }
+
+@app.post("/rank")
+def rank_candidates(
+    job: JobDescription
+):
+
+    db = load_vector_store(
+        embeddings
+    )
+
+    if db is None:
+        return {
+            "error": "No resumes found."
+        }
+
+    ranked = rank_resumes(
+        db,
+        job.description
+    )
+
+    return ranked
