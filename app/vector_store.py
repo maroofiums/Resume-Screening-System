@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores.utils import DistanceStrategy
 
 VECTOR_DB_PATH = "vector_db"
 
@@ -18,7 +19,7 @@ def save_documents(documents, embeddings):
         db = FAISS.load_local(
             VECTOR_DB_PATH,
             embeddings,
-            allow_dangerous_deserialization=True,
+            allow_dangerous_deserialization=True
         )
 
         db.add_documents(documents)
@@ -27,6 +28,7 @@ def save_documents(documents, embeddings):
         db = FAISS.from_documents(
             documents,
             embeddings,
+            distance_strategy = DistanceStrategy.COSINE
         )
 
     db.save_local(VECTOR_DB_PATH)
@@ -48,4 +50,5 @@ def load_vector_store(embeddings):
         VECTOR_DB_PATH,
         embeddings,
         allow_dangerous_deserialization=True,
+        distance_strategy = DistanceStrategy.COSINE
     )
